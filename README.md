@@ -10,7 +10,7 @@ using Deferral::TopLevel
 def my_method_name
   # ...
   file = File.open("my_file", "r")
-  Deferral.defer { file.close }
+  defer { file.close }
 
   file.write "data..."
   # ...
@@ -21,7 +21,7 @@ def my_method_name(list)
   # ...
   list.each do |item|
     file = File.open(item, "r")
-    Deferral.defer { file.close }
+    defer { file.close }
 
     file.write "data..."
     # ...
