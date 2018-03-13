@@ -86,8 +86,51 @@ class DeferralTest < ::Test::Unit::TestCase
   end
 
   test 'confirm instant resources are successfully released' do
+    $DEFERRAL_LABEL = ""
     assert_equal "", $DEFERRAL_LABEL
     test_method_to_use_counter
     assert_equal "r2r1", $DEFERRAL_LABEL
+  end
+
+  $DEFERRAL_LABEL2 = ""
+  class TrueResource2
+    def initialize(name, i)
+      @name = "#{name}#{i}"
+    end
+    def close
+      $DEFERRAL_LABEL2 << @name
+    end
+  end
+
+  test 'confirm instant resources are released at the end of blocks' do
+    $DEFERRAL_LABEL2 = ""
+    assert_equal "", $DEFERRAL_LABEL2
+    3.times do |i|
+      ra = TrueResource2.new("ra", i)
+      Deferral.defer{ ra.close }
+      "yaaaaaaaaaaay"
+      rb = TrueResource2.new("rb", i)
+      Deferral.defer{ rb.close }
+      "fooooooooo"
+    end
+    assert_equal "rb0ra0rb1ra1rb2ra2", $DEFERRAL_LABEL2
+  end
+
+  test 'confirm instant resources are released even when error raised' do
+    $DEFERRAL_LABEL2 = ""
+    assert_equal "", $DEFERRAL_LABEL2
+    begin
+      3.times do |i|
+        ra = TrueResource2.new("ra", i)
+        Deferral.defer{ ra.close }
+        raise "yaaaaaaaaaaay"
+        rb = TrueResource2.new("rb", i)
+        Deferral.defer{ rb.close }
+        "fooooooooo"
+      end
+    rescue
+      # ignore
+    end
+    assert_equal "ra0", $DEFERRAL_LABEL2
   end
 end

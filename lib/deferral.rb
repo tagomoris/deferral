@@ -1,33 +1,48 @@
 require "deferral/version"
-require "securerandom"
+require "deferral/stack_frame"
+require "digest"
 
 module Deferral
-  module ErrorExt
-    def suppressed
-      @suppressed ||= []
-    end
-  end
+  ### Can't add "suppressed" information, because TracePoint doesn't provide
+  ### an exception was rescued or not after it was raised.
+  # module ErrorExt
+  #   def suppressed
+  #     @suppressed ||= []
+  #   end
+  # end
 
   def self.defer(&block)
+    raise ArgumentError, "release block is not specified" unless block
+
+    store = (Thread.current[:deferral_store] ||= {})
+    if !store.empty? && !store[:stack].empty?
+      store[:stack].last.add(block)
+      return
+    end
+
+    stack = store[:stack] = [StackFrame.new(:root)] # root stack frame as first "caller" position of this method
     first_return = true
-    stack_machine = []
 
     trace = TracePoint.new(:call, :return, :b_call, :b_return) do |tp|
-      if tp.event == :return && first_return
+      if tp.event == :return && first_return # return from this method
         first_return = false
-      elsif tp.event == :return && stack_machine.empty?
-        trace.disable
-        begin
-          block.call
-        rescue Exception
-          # ignore all
+        next
+      end
+
+      case tp.event
+      when :call, :b_call
+        stack << StackFrame.new(tp.event)
+      when :return, :b_return
+        frame = stack.pop
+        frame.release!
+        if frame.root?
+          trace.disable
         end
-      elsif tp.event == :call || tp.event == :b_call
-        stack_machine.push(tp.event)
       else
-        stack_machine.pop
+        raise "unexpected TracePoint event:#{tp.event}"
       end
     end
+    stack.last.add(block)
     trace.enable
   end
 end
