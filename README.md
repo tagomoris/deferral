@@ -3,7 +3,9 @@
 ```ruby
 # gem install deferral
 
-require "deferral"
+require "deferral/toplevel"
+using Deferral::TopLevel
+# it makes "defer" without module name available everywhere in this file
 
 def my_method_name
   # ...
@@ -26,9 +28,8 @@ def my_method_name(list)
   end # `file.close` is called at the end of block
 end
 
-require "deferral/toplevel"
-using Deferral::TopLevel
-# it makes "defer" without module name available everywhere in this file
+# "deferral" imports `Deferral.defer`, not to inject top-level methods widely.
+require "deferral"
 
 # or enable everywhere! (DANGER!)
 require "deferral/kernel_ext"
