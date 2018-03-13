@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["TAGOMORI Satoshi"]
   spec.email         = ["tagomoris@gmail.com"]
 
-  spec.summary       = %q{Provide defer method in Ruby}
+  spec.summary       = %q{Provide golang style defer method in Ruby}
   spec.description   = %q{Provide a method to release/collect resources in deferred way}
   spec.homepage      = "https://github.com/tagomoris/deferral"
   spec.license       = "MIT"
