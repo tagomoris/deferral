@@ -20,6 +20,8 @@ class DeferralTopLevelTest < ::Test::Unit::TestCase
       @buf << "yay2;"
       defer{ @buf << "deferred2;" }
       @buf << "yay3;"
+      defer{ @buf << "deferred3;" }
+      @buf << "yay4;"
     end
 
     def yay!
@@ -33,7 +35,7 @@ class DeferralTopLevelTest < ::Test::Unit::TestCase
     c = Consumer.new(r)
     c.yay
     assert r.closed?
-    assert_equal "yay1;yay2;yay3;deferred2;closed;", c.buf
+    assert_equal "yay1;yay2;yay3;yay4;deferred3;deferred2;closed;", c.buf
   end
 
   test 'release a resource in deferred way even for error situation' do
