@@ -20,7 +20,7 @@ module Deferral
       @releases.reverse.each do |r|
         begin
           r.call
-        rescue Exception => e
+        rescue Exception
           # ignore all exceptions ...
           # no way to add "suppressed" exceptions to the exception already thrown
         end
