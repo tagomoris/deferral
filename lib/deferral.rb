@@ -11,38 +11,42 @@ module Deferral
   #   end
   # end
 
-  def self.defer(&block)
-    raise ArgumentError, "release block is not specified" unless block
+  module Mixin
+    def defer(&block)
+      raise ArgumentError, "release block is not specified" unless block
 
-    store = (Thread.current[:deferral_store] ||= {})
-    if !store.empty? && !store[:stack].empty?
-      store[:stack].last.add(block)
-      return
-    end
-
-    stack = store[:stack] = [StackFrame.new(:root)] # root stack frame as first "caller" position of this method
-    first_return = true
-
-    trace = TracePoint.new(:call, :return, :b_call, :b_return) do |tp|
-      if tp.event == :return && first_return # return from this method
-        first_return = false
-        next
+      store = (Thread.current[:deferral_store] ||= {})
+      if !store.empty? && !store[:stack].empty?
+        store[:stack].last.add(block)
+        return
       end
 
-      case tp.event
-      when :call, :b_call
-        stack << StackFrame.new(tp.event)
-      when :return, :b_return
-        frame = stack.pop
-        frame.release!
-        if frame.root?
-          trace.disable
+      stack = store[:stack] = [StackFrame.new(:root)] # root stack frame as first "caller" position of this method
+      first_return = true
+
+      trace = TracePoint.new(:call, :return, :b_call, :b_return) do |tp|
+        if tp.event == :return && first_return # return from this method
+          first_return = false
+          next
         end
-      else
-        raise "unexpected TracePoint event:#{tp.event}"
+
+        case tp.event
+        when :call, :b_call
+          stack << StackFrame.new(tp.event)
+        when :return, :b_return
+          frame = stack.pop
+          frame.release!
+          if frame.root?
+            trace.disable
+          end
+        else
+          raise "unexpected TracePoint event:#{tp.event}"
+        end
       end
+      stack.last.add(block)
+      trace.enable
     end
-    stack.last.add(block)
-    trace.enable
   end
+
+  extend Mixin
 end
