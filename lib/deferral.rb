@@ -32,8 +32,18 @@ module Deferral
 
         case tp.event
         when :call, :b_call
+          if tp.defined_class == Deferral::Mixin && tp.method_id == :defer
+            # invocation of "defer" itself - ignore it
+            next
+          end
+
           stack << StackFrame.new(tp.event)
         when :return, :b_return
+          if tp.defined_class == Deferral::Mixin && tp.method_id == :defer
+            # invocation of "defer" itself - ignore it
+            next
+          end
+
           frame = stack.pop
           frame.release!
           if frame.root?
