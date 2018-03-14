@@ -1,3 +1,5 @@
+require_relative "./deferred"
+
 module Deferral
   class StackFrame
     attr_reader :type, :id
@@ -12,18 +14,13 @@ module Deferral
     end
 
     def add(release)
-      @releases << release
+      @releases << Deferred.new(release)
     end
 
     def release!
       return if @releases.empty?
-      @releases.reverse.each do |r|
-        begin
-          r.call
-        rescue Exception
-          # ignore all exceptions ...
-          # no way to add "suppressed" exceptions to the exception already thrown
-        end
+      @releases.reverse.each do |d|
+        d.call
       end
       nil
     end
