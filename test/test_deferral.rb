@@ -133,4 +133,17 @@ class DeferralTest < ::Test::Unit::TestCase
     end
     assert_equal "ra0", $DEFERRAL_LABEL2
   end
+
+  test 'confirm deferred blocks are called with variable values at registered instant' do
+    r1 = Resource.new
+    r2 = Resource.new
+    1.times do
+      r = r1
+      Deferral.defer{ r.close }
+      r = r2
+      Deferral.defer{ r.close }
+    end
+    assert r1.closed?
+    assert r2.closed?
+  end
 end
