@@ -154,7 +154,7 @@ class DeferralTest < ::Test::Unit::TestCase
       r = r1
       Deferral.defer(r){|r| r.close }
       r = r2
-      Deferral.defer(resource: r){|resource:| r.close }
+      Deferral.defer(resource: r){|resource:| resource.close }
     end
     assert r1.closed?
     assert r2.closed?
