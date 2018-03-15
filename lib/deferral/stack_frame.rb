@@ -13,8 +13,8 @@ module Deferral
       @type == :root
     end
 
-    def add(release)
-      @releases << Deferred.new(release)
+    def add(*args, **kwds, &release)
+      @releases << Deferred.new(*args, **kwds, &release)
     end
 
     def release!
