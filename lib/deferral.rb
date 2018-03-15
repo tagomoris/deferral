@@ -12,12 +12,12 @@ module Deferral
   # end
 
   module Mixin
-    def defer(&block)
+    def defer(*args, **kwargs, &block)
       raise ArgumentError, "release block is not specified" unless block
 
       store = (Thread.current[:deferral_store] ||= {})
       if !store.empty? && !store[:stack].empty?
-        store[:stack].last.add(block)
+        store[:stack].last.add(*args, **kwargs, &block)
         return
       end
 
@@ -60,7 +60,7 @@ module Deferral
           raise "unexpected TracePoint event:#{tp.event}"
         end
       end
-      stack.last.add(block)
+      stack.last.add(*args, **kwargs, &block)
       trace.enable
     end
   end

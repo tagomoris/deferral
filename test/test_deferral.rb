@@ -146,4 +146,17 @@ class DeferralTest < ::Test::Unit::TestCase
     assert r1.closed?
     assert r2.closed?
   end
+
+  test 'pass arguments to defer' do
+    r1 = Resource.new
+    r2 = Resource.new
+    1.times do
+      r = r1
+      Deferral.defer(r){|res| res.close }
+      r = r2
+      Deferral.defer(resource: r){|resource:| resource.close }
+    end
+    assert r1.closed?
+    assert r2.closed?
+  end
 end

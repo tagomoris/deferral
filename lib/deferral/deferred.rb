@@ -15,7 +15,9 @@ module Deferral
       nil
     end
 
-    def initialize(block)
+    def initialize(*args, **kwargs, &block)
+      @args = args
+      @kwargs = kwargs
       @block = block
       @local_variables = Deferred.get_local_variables(block)
     end
@@ -24,7 +26,7 @@ module Deferral
       current_vars = Deferred.get_local_variables(@block)
       begin
         Deferred.set_local_variables(@block, @local_variables)
-        @block.call
+        @block.call(*@args, **@kwargs)
       rescue Exception
         # ignore all exceptions ...
         # no way to add "suppressed" exceptions to the exception already thrown
