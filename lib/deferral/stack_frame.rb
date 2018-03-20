@@ -19,7 +19,7 @@ module Deferral
 
     def release!
       return if @releases.empty?
-      @releases.reverse.each do |d|
+      @releases.reverse_each do |d|
         d.call
       end
       nil
