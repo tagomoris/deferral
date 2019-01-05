@@ -2,7 +2,7 @@ require_relative "./deferred"
 
 module Deferral
   class StackFrame
-    attr_reader :type, :id
+    attr_reader :type
 
     def initialize(type)
       @type = type
