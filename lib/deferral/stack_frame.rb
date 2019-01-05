@@ -18,9 +18,7 @@ module Deferral
     end
 
     def release!
-      @releases.reverse_each do |d|
-        d.call
-      end
+      @releases.reverse_each(&:call)
       nil
     end
   end
